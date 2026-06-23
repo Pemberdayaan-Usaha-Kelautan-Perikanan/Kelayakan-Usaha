@@ -1,0 +1,997 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>KNMP / KDKMP Investor Feasibility Dashboard</title>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <!-- LOGIN SCREEN -->
+  <section id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="app-logo">KP</div>
+
+        <div>
+          <p class="badge">KNMP / KDKMP Investor Dashboard</p>
+          <h1>Marine Business Feasibility System</h1>
+        </div>
+      </div>
+
+      <p class="login-description">
+        Sistem analisis kelayakan usaha perikanan berbasis produksi, HPP,
+        biaya operasional, investasi, cashflow, sensitivitas, dan switching value.
+      </p>
+
+      <div class="login-grid">
+        <div>
+          <label for="loginNama">Nama pengguna</label>
+          <input id="loginNama" type="text" placeholder="Contoh: Zidan" />
+        </div>
+
+        <div>
+          <label for="loginInstansi">Instansi / koperasi</label>
+          <input id="loginInstansi" type="text" placeholder="Contoh: Koperasi Mina Sejahtera" />
+        </div>
+
+        <div>
+          <label for="loginRole">Peran pengguna</label>
+          <select id="loginRole">
+            <option value="user">User / Enumerator</option>
+            <option value="admin">Admin / Reviewer</option>
+            <option value="investor">Investor</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="loginWilayah">Wilayah</label>
+          <input id="loginWilayah" type="text" placeholder="Contoh: Bandung" />
+        </div>
+      </div>
+
+      <button class="full-button login-button" onclick="loginApp()">
+        Masuk ke Dashboard
+      </button>
+    </div>
+  </section>
+
+  <!-- APP -->
+  <div id="app" class="app hidden">
+    <button id="floatingSidebarToggle" class="floating-sidebar-toggle" onclick="toggleSidebar()">
+      ☰
+    </button>
+
+    <!-- SIDEBAR -->
+    <aside id="sidebar" class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">KP</div>
+
+        <div>
+          <h2>KNMP / KDKMP</h2>
+          <p>Investor Feasibility</p>
+        </div>
+      </div>
+
+      <nav class="menu">
+        <a href="#dashboard" class="menu-link active">
+          <span class="menu-icon">⌂</span>
+          Dashboard
+        </a>
+
+        <a href="#identitas" class="menu-link">
+          <span class="menu-icon">▤</span>
+          Identitas
+        </a>
+
+        <a href="#produksi" class="menu-link">
+          <span class="menu-icon">◉</span>
+          Produksi
+        </a>
+
+        <a href="#hpp" class="menu-link">
+          <span class="menu-icon">▣</span>
+          HPP
+        </a>
+
+        <a href="#operasional" class="menu-link">
+          <span class="menu-icon">▥</span>
+          Biaya Operasional
+        </a>
+
+        <a href="#investasi" class="menu-link">
+          <span class="menu-icon">▧</span>
+          Investasi
+        </a>
+
+        <a href="#skenario" class="menu-link">
+          <span class="menu-icon">◌</span>
+          Skenario
+        </a>
+
+        <a href="#switching" class="menu-link">
+          <span class="menu-icon">↻</span>
+          Switching Value
+        </a>
+
+        <a href="#laporan" class="menu-link">
+          <span class="menu-icon">☷</span>
+          Laporan
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <button class="full-button secondary" onclick="isiDataDemo()">
+          Isi Data Demo
+        </button>
+
+        <button class="full-button danger" onclick="resetData()">
+          Reset Data
+        </button>
+
+        <button class="full-button sidebar-hide-btn" onclick="toggleSidebar()">
+          Sembunyikan Menu
+        </button>
+
+        <button class="full-button danger-outline" onclick="logoutApp()">
+          Keluar
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main">
+
+      <!-- TOPBAR -->
+      <header class="topbar">
+        
+        <div class="topbar-title">
+          <p class="page-label">Investment Feasibility Dashboard</p>
+          <h1>Analisis Kelayakan Usaha Perikanan</h1>
+          <p id="userGreeting">Halo, Pengguna</p>
+        </div>
+
+        <div class="top-actions">
+          <button class="primary-action" onclick="hitungKelayakan()">
+            <span>🧮</span> Hitung Semua
+          </button>
+          <button class="secondary" onclick="exportCSV()">
+            <span>📊</span> Export Excel
+          </button>
+          <button class="secondary" onclick="cetakLaporan()">
+            <span>🖨</span> Cetak PDF
+          </button>
+          <button class="secondary" onclick="simpanKeServer()">
+            <span>💾</span> Simpan
+          </button>
+        </div>
+      </header>
+
+      <section id="dashboard" class="section dashboard-section">
+
+        <div class="dashboard-hero-grid">
+          <div id="heroKelayakan" class="hero-card hero-menunggu">
+            <div class="hero-left-icon">
+              <div class="hero-circle-outer">
+                <div id="heroIcon" class="hero-circle-inner">?</div>
+              </div>
+            </div>
+
+            <div class="hero-content">
+              <p class="hero-label">HASIL KELAYAKAN</p>
+              <h2 id="heroTitle">MENUNGGU ANALISIS</h2>
+              <h4 id="heroSubtitle">Klik tombol Hitung Semua</h4>
+              <p id="heroDescription">
+                Hasil kelayakan, skor, dan rekomendasi investor akan muncul di sini.
+              </p>
+            </div>
+          </div>
+
+          <div class="top-summary-panel">
+            <div class="top-summary-metrics">
+              <div class="summary-metric">
+                <div class="summary-metric-icon">📈</div>
+                <div>
+                  <p>NPV</p>
+                  <h3 id="quickNPV">-</h3>
+                </div>
+              </div>
+
+              <div class="summary-metric">
+                <div class="summary-metric-icon">%</div>
+                <div>
+                  <p>IRR</p>
+                  <h3 id="quickIRR">-</h3>
+                </div>
+              </div>
+
+              <div class="summary-metric">
+                <div class="summary-metric-icon">⚖</div>
+                <div>
+                  <p>Net B/C</p>
+                  <h3 id="quickNetBC">-</h3>
+                </div>
+              </div>
+
+              <div class="summary-metric">
+                <div class="summary-metric-icon">🕒</div>
+                <div>
+                  <p>Payback Period</p>
+                  <h3 id="quickPP">-</h3>
+                </div>
+              </div>
+            </div>
+
+            <div id="kesimpulanKelayakan" class="conclusion-box">
+              Kesimpulan kelayakan akan muncul setelah data dihitung.
+            </div>
+          </div>
+        </div>
+
+        <div class="kpi-row top-kpi-row">
+          <div class="kpi-card">
+            <div class="kpi-icon green">📈</div>
+            <div>
+              <p>NPV</p>
+              <h3 id="hasilNPV">-</h3>
+              <small>Nilai sekarang manfaat bersih</small>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon green-soft">%</div>
+            <div>
+              <p>IRR</p>
+              <h3 id="hasilIRR">-</h3>
+              <small>Tingkat pengembalian internal</small>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon blue">⚖</div>
+            <div>
+              <p>Net B/C Ratio</p>
+              <h3 id="hasilNetBC">-</h3>
+              <small>Rasio manfaat terhadap biaya</small>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon purple">🕒</div>
+            <div>
+              <p>Payback Period</p>
+              <h3 id="hasilPP">-</h3>
+              <small>Waktu balik modal</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="kpi-row">
+          <div class="kpi-card">
+            <div class="kpi-icon orange">🪙</div>
+            <div>
+              <p>ROI</p>
+              <h3 id="hasilROI">-</h3>
+              <small>Return on Investment</small>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon red">🏷</div>
+            <div>
+              <p>HPP / Kg</p>
+              <h3 id="hasilHPP">-</h3>
+              <small>Harga pokok produksi</small>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon green-dark">💵</div>
+            <div>
+              <p>Laba Bersih / Bulan</p>
+              <h3 id="hasilLabaBersih">-</h3>
+              <small>Setelah biaya operasional</small>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon violet">◔</div>
+            <div>
+              <p>Margin Bersih</p>
+              <h3 id="hasilMarginBersih">-</h3>
+              <small>Laba bersih / pendapatan</small>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon blue-soft">◕</div>
+            <div>
+              <p>Rasio HPP</p>
+              <h3 id="hasilRasioHPP">-</h3>
+              <small>HPP terhadap harga jual</small>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon cyan">🐟</div>
+            <div>
+              <p>Produksi / Bulan</p>
+              <h3 id="hasilProduk">-</h3>
+              <small>Produk jadi</small>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon cyan-soft">🚢</div>
+            <div>
+              <p>Bahan Baku / Bulan</p>
+              <h3 id="hasilBahanBaku">-</h3>
+              <small>Total input ikan</small>
+            </div>
+          </div>
+
+          <div class="kpi-card">
+            <div class="kpi-icon money">💰</div>
+            <div>
+              <p>Pendapatan / Bulan</p>
+              <h3 id="hasilPendapatan">-</h3>
+              <small>Omzet bulanan</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-bottom-grid">
+          <div class="panel-card">
+            <h3>Ringkasan Keuangan Bulanan</h3>
+
+            <div class="bar-chart">
+              <div class="bar-item">
+                <span>Pendapatan</span>
+                <div class="bar-track"><div id="barPendapatan" class="bar-fill income"></div></div>
+                <strong id="labelPendapatan">-</strong>
+              </div>
+
+              <div class="bar-item">
+                <span>HPP (Total)</span>
+                <div class="bar-track"><div id="barHPP" class="bar-fill hpp"></div></div>
+                <strong id="labelHPP">-</strong>
+              </div>
+
+              <div class="bar-item">
+                <span>Biaya Operasional</span>
+                <div class="bar-track"><div id="barOPEX" class="bar-fill opex"></div></div>
+                <strong id="labelOPEX">-</strong>
+              </div>
+
+              <div class="bar-item">
+                <span>Laba Bersih</span>
+                <div class="bar-track"><div id="barLaba" class="bar-fill laba"></div></div>
+                <strong id="labelLaba">-</strong>
+              </div>
+            </div>
+
+            <div id="marginInsight" class="insight-box">
+              Margin usaha akan muncul setelah data dihitung.
+            </div>
+          </div>
+
+          <div class="panel-card cost-panel">
+            <div class="panel-title-row cost-title-row">
+              <div>
+                <h3>Komposisi Biaya Operasional</h3>
+                <p class="panel-subtitle">Nilai dan porsi setiap komponen biaya per bulan.</p>
+              </div>
+
+              <div class="cost-donut-wrap">
+                <div class="cost-donut" id="costDonut">
+                  <span id="donutLabel">-</span>
+                </div>
+                <small id="donutCaption">Porsi terbesar</small>
+              </div>
+            </div>
+
+            <div class="cost-legend">
+              <div class="legend-item">
+                <span class="legend-dot dot-green"></span>
+                <span>Biaya Bahan Baku</span>
+                <div class="cost-value-group">
+                  <strong id="dashBiayaBahanBaku">-</strong>
+                  <small id="dashPctBahanBaku">-</small>
+                </div>
+              </div>
+
+              <div class="legend-item">
+                <span class="legend-dot dot-orange"></span>
+                <span>Biaya Variabel</span>
+                <div class="cost-value-group">
+                  <strong id="dashBiayaVariabel">-</strong>
+                  <small id="dashPctVariabel">-</small>
+                </div>
+              </div>
+
+              <div class="legend-item">
+                <span class="legend-dot dot-purple"></span>
+                <span>Biaya Tenaga Kerja</span>
+                <div class="cost-value-group">
+                  <strong id="dashBiayaTenagaKerja">-</strong>
+                  <small id="dashPctTenagaKerja">-</small>
+                </div>
+              </div>
+
+              <div class="legend-item">
+                <span class="legend-dot dot-blue"></span>
+                <span>Biaya Operasional Tetap</span>
+                <div class="cost-value-group">
+                  <strong id="dashBiayaTetap">-</strong>
+                  <small id="dashPctTetap">-</small>
+                </div>
+              </div>
+            </div>
+
+            <div class="cost-total-box">
+              <span>Total Biaya Usaha / Bulan</span>
+              <strong id="dashTotalBiaya">-</strong>
+            </div>
+          </div>
+
+          <div class="panel-card">
+            <h3>Switching Value (Batas Toleransi)</h3>
+
+            <div class="switching-grid-preview">
+              <div class="switch-box red-soft">
+                <p>Harga Jual Turun Maks.</p>
+                <h4 id="switchHarga">-</h4>
+                <small>Sebelum rugi</small>
+                <div class="switch-value-box">
+                  Turun menjadi <strong id="switchHargaValue">-</strong>
+                </div>
+              </div>
+
+              <div class="switch-box orange-soft">
+                <p>Harga Bahan Baku Naik Maks.</p>
+                <h4 id="switchBahanBaku">-</h4>
+                <small>Sebelum rugi</small>
+                <div class="switch-value-box">
+                  Naik menjadi <strong id="switchBahanBakuValue">-</strong>
+                </div>
+              </div>
+
+              <div class="switch-box blue-soft">
+                <p>Produksi Turun Maks.</p>
+                <h4 id="switchProduksi">-</h4>
+                <small>Sebelum rugi</small>
+                <div class="switch-value-box">
+                  Turun menjadi <strong id="switchProduksiValue">-</strong>
+                </div>
+              </div>
+
+              <div class="switch-box purple-soft">
+                <p>Biaya Operasional Naik Maks.</p>
+                <h4 id="switchOperasional">-</h4>
+                <small>Sebelum rugi</small>
+                <div class="switch-value-box">
+                  Naik menjadi <strong id="switchOperasionalValue">-</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="summary-strip">
+          <div class="summary-strip-icon">i</div>
+          <div>
+            <h3>Ringkasan Otomatis</h3>
+            <p id="ringkasanOtomatis">
+              Ringkasan akan muncul setelah data dihitung.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- IDENTITAS -->
+      <section id="identitas" class="section">
+        <div class="section-header">
+          <div>
+            <h2>Identitas Usaha</h2>
+            <p>Data dasar untuk laporan dan database.</p>
+          </div>
+        </div>
+
+        <div class="grid">
+          <div>
+            <label for="namaKoperasi">Nama koperasi / kelompok usaha</label>
+            <input id="namaKoperasi" type="text" placeholder="Contoh: Koperasi Mina Sejahtera" />
+          </div>
+
+          <div>
+            <label for="lokasiUsaha">Lokasi usaha</label>
+            <input id="lokasiUsaha" type="text" placeholder="Contoh: Cukanggenteng" />
+          </div>
+
+          <div>
+            <label for="provinsiUsaha">Provinsi</label>
+            <input id="provinsiUsaha" type="text" placeholder="Contoh: Jawa Barat" />
+          </div>
+
+          <div>
+            <label for="kabupatenUsaha">Kabupaten / Kota</label>
+            <input id="kabupatenUsaha" type="text" placeholder="Contoh: Kab. Bandung" />
+          </div>
+
+          <div>
+            <label for="namaPengisi">Nama pengisi data</label>
+            <input id="namaPengisi" type="text" placeholder="Contoh: Zidan" />
+          </div>
+
+          <div>
+            <label for="tahunAnalisis">Tahun analisis</label>
+            <input id="tahunAnalisis" type="number" value="2026" />
+          </div>
+        </div>
+      </section>
+
+      <!-- PRODUKSI -->
+      <section id="produksi" class="section">
+        <div class="section-header">
+          <div>
+            <h2>Input Produksi</h2>
+            <p>Masukkan volume bahan baku, rendemen, harga beli, dan harga jual.</p>
+          </div>
+
+          <button onclick="tambahBarisIkan()">+ Tambah Produk/Ikan</button>
+        </div>
+
+        <div class="grid">
+          <div>
+            <label for="jenisUsaha">Jenis usaha</label>
+            <select id="jenisUsaha" onchange="gantiJenisUsaha()">
+              <option value="pindang">Pemindangan Ikan</option>
+              <option value="fillet">Pengolahan Fillet Ikan</option>
+              <option value="coldstorage">Cold Storage</option>
+              <option value="bioflok">Budidaya Bioflok</option>
+              <option value="tuna">Pengolahan Tuna Loin</option>
+              <option value="custom">Usaha Perikanan Lainnya</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="sumberData">Sumber data</label>
+            <select id="sumberData" onchange="gantiSumberData()">
+              <option value="Angka Standar Sistem">Angka Standar Sistem</option>
+              <option value="Data Lapangan KNMP/KDKMP">Data Lapangan KNMP/KDKMP</option>
+            </select>
+          </div>
+
+          <div>
+            <label for="hariKerja">Hari kerja per bulan</label>
+            <input type="number" id="hariKerja" value="25" />
+          </div>
+
+          <div>
+            <label for="satuanProduksi">Satuan produksi</label>
+            <select id="satuanProduksi">
+              <option value="kg">Kilogram</option>
+              <option value="ton">Ton</option>
+              <option value="unit">Unit</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="pindangInputBox" class="sub-card">
+          <h3>Komposisi Bahan Baku per Minggu</h3>
+
+          <div class="table-wrapper">
+            <table class="input-table">
+              <thead>
+                <tr>
+                  <th>Nama Ikan / Produk</th>
+                  <th>Volume / Minggu</th>
+                  <th>Rendemen (%)</th>
+                  <th>Harga Beli / Kg</th>
+                  <th>Harga Jual / Kg</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+
+              <tbody id="ikanBody">
+                <tr>
+                  <td><input class="ikan-nama" value="Layang" /></td>
+                  <td><input type="number" class="ikan-volume" value="3000" /></td>
+                  <td><input type="number" class="ikan-rendemen" value="85" /></td>
+                  <td><input class="ikan-harga-beli input-rupiah" value="22.000" /></td>
+                  <td><input class="ikan-harga-jual input-rupiah" value="38.000" /></td>
+                  <td><button class="danger small-button" onclick="hapusBarisIkan(this)">Hapus</button></td>
+                </tr>
+
+                <tr>
+                  <td><input class="ikan-nama" value="Tongkol" /></td>
+                  <td><input type="number" class="ikan-volume" value="2500" /></td>
+                  <td><input type="number" class="ikan-rendemen" value="85" /></td>
+                  <td><input class="ikan-harga-beli input-rupiah" value="24.000" /></td>
+                  <td><input class="ikan-harga-jual input-rupiah" value="40.000" /></td>
+                  <td><button class="danger small-button" onclick="hapusBarisIkan(this)">Hapus</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div id="umumInputBox" class="sub-card hidden">
+          <h3>Produksi Umum</h3>
+
+          <div class="grid">
+            <div>
+              <label for="jenisIkanUmum">Jenis produk</label>
+              <input id="jenisIkanUmum" value="Tongkol Fillet" />
+            </div>
+
+            <div>
+              <label for="ikanPerHari">Bahan baku per hari</label>
+              <input type="number" id="ikanPerHari" value="2000" />
+            </div>
+
+            <div>
+              <label for="rendemenUmum">Rendemen (%)</label>
+              <input type="number" id="rendemenUmum" value="55" />
+            </div>
+
+            <div>
+              <label for="hargaBeliUmum">Harga beli / kg</label>
+              <input id="hargaBeliUmum" class="input-rupiah" value="25.000" />
+            </div>
+
+            <div>
+              <label for="hargaJualUmum">Harga jual / kg</label>
+              <input id="hargaJualUmum" class="input-rupiah" value="52.000" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- HPP -->
+      <section id="hpp" class="section">
+        <div class="section-header">
+          <div>
+            <h2>HPP: Biaya Produksi Variabel</h2>
+            <p>Biaya langsung yang melekat pada produksi.</p>
+          </div>
+
+          <button onclick="tambahBarisBiayaVariabel()">+ Tambah Komponen HPP</button>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="input-table">
+            <thead>
+              <tr>
+                <th>Komponen HPP</th>
+                <th>Basis Perhitungan</th>
+                <th>Biaya / Satuan</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+
+            <tbody id="biayaVariabelBody">
+              <tr>
+                <td><input class="biaya-var-nama" value="Kemasan" /></td>
+                <td>
+                  <select class="biaya-var-satuan">
+                    <option value="produk" selected>Per kg produk jadi</option>
+                    <option value="bahanBaku">Per kg bahan baku</option>
+                  </select>
+                </td>
+                <td><input class="biaya-var-nilai input-rupiah" value="2.500" /></td>
+                <td><button class="danger small-button" onclick="hapusBarisBiaya(this)">Hapus</button></td>
+              </tr>
+
+              <tr>
+                <td><input class="biaya-var-nama" value="Es / Penanganan" /></td>
+                <td>
+                  <select class="biaya-var-satuan">
+                    <option value="produk">Per kg produk jadi</option>
+                    <option value="bahanBaku" selected>Per kg bahan baku</option>
+                  </select>
+                </td>
+                <td><input class="biaya-var-nilai input-rupiah" value="600" /></td>
+                <td><button class="danger small-button" onclick="hapusBarisBiaya(this)">Hapus</button></td>
+              </tr>
+
+              <tr>
+                <td><input class="biaya-var-nama" value="LPG / Energi Produksi" /></td>
+                <td>
+                  <select class="biaya-var-satuan">
+                    <option value="produk">Per kg produk jadi</option>
+                    <option value="bahanBaku" selected>Per kg bahan baku</option>
+                  </select>
+                </td>
+                <td><input class="biaya-var-nilai input-rupiah" value="800" /></td>
+                <td><button class="danger small-button" onclick="hapusBarisBiaya(this)">Hapus</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- OPERASIONAL -->
+      <section id="operasional" class="section">
+        <div class="section-header">
+          <div>
+            <h2>Biaya Operasional</h2>
+            <p>Biaya bulanan untuk menjalankan usaha.</p>
+          </div>
+
+          <button onclick="tambahBarisBiayaTetap()">+ Tambah Biaya Operasional</button>
+        </div>
+
+        <div class="sub-card">
+          <h3>Tenaga Kerja</h3>
+
+          <div class="grid">
+            <div>
+              <label for="tenagaKerja">Jumlah tenaga kerja</label>
+              <input type="number" id="tenagaKerja" value="12" />
+            </div>
+
+            <div>
+              <label for="upah">Upah / orang / bulan</label>
+              <input id="upah" class="input-rupiah" value="2.300.000" />
+            </div>
+          </div>
+        </div>
+
+        <div class="table-wrapper mt-20">
+          <table class="input-table">
+            <thead>
+              <tr>
+                <th>Komponen Operasional</th>
+                <th>Biaya / Bulan</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+
+            <tbody id="biayaTetapBody">
+              <tr>
+                <td><input class="biaya-tetap-nama" value="Listrik dan Air" /></td>
+                <td><input class="biaya-tetap-nilai input-rupiah" value="10.000.000" /></td>
+                <td><button class="danger small-button" onclick="hapusBarisBiaya(this)">Hapus</button></td>
+              </tr>
+
+              <tr>
+                <td><input class="biaya-tetap-nama" value="Transportasi dan Distribusi" /></td>
+                <td><input class="biaya-tetap-nilai input-rupiah" value="5.000.000" /></td>
+                <td><button class="danger small-button" onclick="hapusBarisBiaya(this)">Hapus</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- INVESTASI -->
+      <section id="investasi" class="section">
+        <div class="section-header">
+          <div>
+            <h2>Investasi Awal</h2>
+            <p>Total investasi otomatis dijumlahkan dari komponen yang dimasukkan.</p>
+          </div>
+
+          <button onclick="tambahBarisInvestasi()">+ Tambah Investasi</button>
+        </div>
+
+        <div class="table-wrapper">
+          <table class="input-table">
+            <thead>
+              <tr>
+                <th>Komponen Investasi</th>
+                <th>Nilai Investasi</th>
+                <th>Umur Ekonomis (tahun)</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+
+            <tbody id="investasiBody">
+              <tr>
+                <td><input class="investasi-nama" value="Bangunan / Renovasi UPI" /></td>
+                <td><input class="investasi-nilai input-rupiah" value="200.000.000" /></td>
+                <td><input type="number" class="investasi-umur" value="10" /></td>
+                <td><button class="danger small-button" onclick="hapusBarisInvestasi(this)">Hapus</button></td>
+              </tr>
+
+              <tr>
+                <td><input class="investasi-nama" value="Peralatan Produksi" /></td>
+                <td><input class="investasi-nilai input-rupiah" value="150.000.000" /></td>
+                <td><input type="number" class="investasi-umur" value="5" /></td>
+                <td><button class="danger small-button" onclick="hapusBarisInvestasi(this)">Hapus</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="grid mt-20">
+          <div>
+            <label for="investasi">Total investasi awal</label>
+            <input id="investasi" class="input-rupiah" value="350.000.000" readonly />
+          </div>
+
+          <div>
+            <label for="penyusutanBulanan">Estimasi penyusutan bulanan</label>
+            <input id="penyusutanBulanan" class="input-rupiah" value="0" readonly />
+          </div>
+        </div>
+      </section>
+
+      <!-- SKENARIO -->
+      <section id="skenario" class="section">
+        <div class="section-header">
+          <div>
+            <h2>Skenario dan Proyeksi</h2>
+            <p>Atur periode cashflow, diskonto, dan skenario usaha.</p>
+          </div>
+        </div>
+
+        <div class="scenario-options">
+          <label class="scenario-card">
+            <input type="radio" name="skenario" value="hatiHati" />
+            <span>Hati-hati</span>
+            <small>Produksi turun, harga turun, biaya naik.</small>
+          </label>
+
+          <label class="scenario-card">
+            <input type="radio" name="skenario" value="normal" checked />
+            <span>Normal</span>
+            <small>Sesuai data input.</small>
+          </label>
+
+          <label class="scenario-card">
+            <input type="radio" name="skenario" value="baik" />
+            <span>Baik</span>
+            <small>Produksi dan harga naik, biaya lebih efisien.</small>
+          </label>
+        </div>
+
+        <div class="grid mt-20">
+          <div>
+            <label for="periodeProyeksi">Periode proyeksi (tahun)</label>
+            <input type="number" id="periodeProyeksi" value="5" min="1" max="20" />
+          </div>
+
+          <div>
+            <label for="discountRate">Discount rate (%)</label>
+            <input type="number" id="discountRate" value="10" />
+          </div>
+
+          <div>
+            <label for="kenaikanPendapatan">Kenaikan pendapatan / tahun (%)</label>
+            <input type="number" id="kenaikanPendapatan" value="5" />
+          </div>
+
+          <div>
+            <label for="kenaikanBiaya">Kenaikan biaya / tahun (%)</label>
+            <input type="number" id="kenaikanBiaya" value="4" />
+          </div>
+        </div>
+
+        <div id="validasiInput" class="validation-box">
+          Data siap dihitung.
+        </div>
+      </section>
+
+      <!-- SWITCHING DETAIL -->
+      <section id="switching" class="section">
+        <div class="section-header">
+          <div>
+            <h2>Switching Value</h2>
+            <p>Otomatis terhitung setelah klik Hitung Semua.</p>
+          </div>
+        </div>
+
+        <div class="switching-grid">
+          <div class="switch-card">
+            <p>Harga jual maksimum turun</p>
+            <h3 id="switchHargaDetail">-</h3>
+            <small>Sampai usaha tidak aman</small>
+            <div class="switch-value-box">
+              Turun menjadi <strong id="switchHargaValueDetail">-</strong>
+            </div>
+          </div>
+
+          <div class="switch-card">
+            <p>Biaya bahan baku maksimum naik</p>
+            <h3 id="switchBahanBakuDetail">-</h3>
+            <small>Sampai usaha tidak aman</small>
+            <div class="switch-value-box">
+              Naik menjadi <strong id="switchBahanBakuValueDetail">-</strong>
+            </div>
+          </div>
+
+          <div class="switch-card">
+            <p>Produksi maksimum turun</p>
+            <h3 id="switchProduksiDetail">-</h3>
+            <small>Sampai usaha tidak aman</small>
+            <div class="switch-value-box">
+              Turun menjadi <strong id="switchProduksiValueDetail">-</strong>
+            </div>
+          </div>
+
+          <div class="switch-card">
+            <p>Biaya operasional maksimum naik</p>
+            <h3 id="switchOperasionalDetail">-</h3>
+            <small>Sampai usaha tidak aman</small>
+            <div class="switch-value-box">
+              Naik menjadi <strong id="switchOperasionalValueDetail">-</strong>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- LAPORAN -->
+      <section id="laporan" class="section">
+        <div class="section-header">
+          <div>
+            <h2>Laporan Detail</h2>
+            <p>Ringkasan hasil analisis untuk pengambilan keputusan.</p>
+          </div>
+        </div>
+
+        <div id="rekomendasiBox" class="recommendation-section">
+          <h3>Rekomendasi Sistem</h3>
+          <p id="rekomendasiSistem">Rekomendasi akan muncul setelah data dihitung.</p>
+        </div>
+
+        <div class="risk-section">
+          <h3>Catatan Risiko</h3>
+          <ul id="catatanRisiko">
+            <li>Catatan risiko akan muncul setelah data dihitung.</li>
+          </ul>
+        </div>
+
+        <div class="detail-section">
+          <h3>Struktur Laba Rugi Bulanan</h3>
+
+          <div class="detail-row"><span>Pendapatan</span><strong id="detailPendapatan">-</strong></div>
+          <div class="detail-row"><span>Biaya bahan baku</span><strong id="detailBiayaBahanBaku">-</strong></div>
+          <div class="detail-row"><span>Biaya produksi variabel</span><strong id="detailBiayaVariabel">-</strong></div>
+          <div class="detail-row total"><span>HPP total</span><strong id="detailHPPTotal">-</strong></div>
+          <div class="detail-row"><span>Laba kotor</span><strong id="detailLabaKotor">-</strong></div>
+          <div class="detail-row"><span>Biaya tenaga kerja</span><strong id="detailBiayaTenagaKerja">-</strong></div>
+          <div class="detail-row"><span>Biaya operasional tetap</span><strong id="detailBiayaTetap">-</strong></div>
+          <div class="detail-row total"><span>Total biaya operasional</span><strong id="detailTotalOPEX">-</strong></div>
+          <div class="detail-row total"><span>Laba bersih</span><strong id="detailLabaBersih">-</strong></div>
+        </div>
+
+        <div class="cashflow-section">
+          <h3>Proyeksi Cashflow</h3>
+
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Tahun</th>
+                  <th>Pendapatan</th>
+                  <th>HPP</th>
+                  <th>Biaya Operasional</th>
+                  <th>Net Benefit</th>
+                  <th>Discounted Benefit</th>
+                  <th>Akumulasi Cashflow</th>
+                </tr>
+              </thead>
+
+              <tbody id="cashflowBody">
+                <tr>
+                  <td colspan="7">Cashflow akan muncul setelah dihitung.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
