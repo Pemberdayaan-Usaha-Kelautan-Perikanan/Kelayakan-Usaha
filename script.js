@@ -794,8 +794,16 @@ function hitungKelayakan() {
 
   const hppTotal = produksi.biayaBahanBakuBulanan + biayaVariabel.total;
 
+    // HPP per kg (full costing) = total biaya produksi / produk jadi
+  // total biaya = bahan baku + biaya variabel + tenaga kerja + biaya tetap + penyusutan
+  const biayaPenyusutanBulanan = investasi.totalPenyusutanBulanan || 0;
+  const totalBiayaProduksi =
+    hppTotal + biayaTenagaKerja + biayaTetap.total + biayaPenyusutanBulanan;
+
   const hppPerKg =
-    produksi.produkJadiBulanan > 0 ? hppTotal / produksi.produkJadiBulanan : 0;
+    produksi.produkJadiBulanan > 0
+      ? totalBiayaProduksi / produksi.produkJadiBulanan
+      : 0;
 
   const labaKotor = produksi.pendapatanBulanan - hppTotal;
   const biayaOperasional = biayaTetap.total + biayaTenagaKerja;
